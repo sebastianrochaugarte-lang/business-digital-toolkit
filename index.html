@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Cost Calculator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f5f4;color:#202b27}
+header{background:#173d32;color:white;padding:28px 8%}
+header h1{margin:0 0 8px;font-size:26px}
+header p{margin:0;color:#d5e6dd}
+main{max-width:950px;margin:35px auto;padding:0 20px}
+.card{background:white;padding:25px;border-radius:14px;margin-bottom:20px;box-shadow:0 3px 15px #0000000b}
+h2{font-size:19px;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:12px;border:1px solid #d5ddd8;border-radius:7px;font-size:15px}
+button{background:#176348;color:white;border:0;border-radius:8px;padding:14px 22px;font-size:15px;cursor:pointer}
+button:hover{background:#104b36}
+.results{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.result{background:#edf5f0;padding:18px;border-radius:10px}
+.result span{font-size:13px;color:#58665e}
+.result strong{display:block;font-size:23px;margin-top:8px;color:#176348}
+.note{font-size:12px;color:#68766e}
+@media(max-width:600px){.grid,.results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Business Cost Calculator</h1>
+<p>A practical financial tool for entrepreneurs and small businesses.</p>
+</header>
+
+<main>
+<div class="card">
+<h2>01. Product information</h2>
+<div class="grid">
+<div>
+<label>Product name</label>
+<input id="product" placeholder="Example: Rice">
+</div>
+<div>
+<label>Currency</label>
+<select id="currency">
+<option value="Bs">Bolivianos (Bs)</option>
+<option value="$">US Dollars ($)</option>
+</select>
+</div>
+<div>
+<label>Purchase price (total)</label>
+<input id="purchase" type="number" min="0" step="0.01" value="1000">
+</div>
+<div>
+<label>Quantity purchased</label>
+<input id="quantity" type="number" min="1" step="1" value="100">
+</div>
+<div>
+<label>Transportation costs</label>
+<input id="transport" type="number" min="0" step="0.01" value="150">
+</div>
+<div>
+<label>Other expenses</label>
+<input id="other" type="number" min="0" step="0.01" value="50">
+</div>
+<div>
+<label>Desired profit margin (%)</label>
+<input id="margin" type="number" min="0" max="99.99" step="0.01" value="30">
+</div>
+<div>
+<label>Actual selling price per unit (optional)</label>
+<input id="selling" type="number" min="0" step="0.01" placeholder="Enter to compare">
+</div>
+</div>
+<br>
+<button onclick="calculate()">Calculate results</button>
+<button onclick="resetForm()" style="background:#64756c;margin-left:8px">Reset</button>
+</div>
+
+<div class="card">
+<h2>02. Financial results</h2>
+<div class="results">
+<div class="result"><span>Total investment</span><strong id="total">Bs 1,200.00</strong></div>
+<div class="result"><span>Unit cost</span><strong id="unit">Bs 12.00</strong></div>
+<div class="result"><span>Suggested selling price</span><strong id="price">Bs 17.14</strong></div>
+<div class="result"><span>Profit per unit</span><strong id="profit">Bs 5.14</strong></div>
+<div class="result"><span>Expected total profit</span><strong id="totalProfit">Bs 514.29</strong></div>
+<div class="result"><span>Expected profit margin</span><strong id="actualMargin">30.00%</strong></div>
+</div>
+<div id="comparison" class="note" style="margin-top:18px"></div>
+</div>
+<p class="note">Business Digital Toolkit | Open-source project for small businesses in Latin America.</p>
+</main>
+
+<script>
+function calculate(){
+const product=document.getElementById('product').value.trim();
+const currency=document.getElementById('currency').value;
+const purchase=Number(document.getElementById('purchase').value);
+const quantity=Number(document.getElementById('quantity').value);
+const transport=Number(document.getElementById('transport').value);
+const other=Number(document.getElementById('other').value);
+const margin=Number(document.getElementById('margin').value);
+const sellingInput=document.getElementById('selling').value;
+const values=[purchase,quantity,transport,other,margin];
+if(values.some(v=>!Number.isFinite(v)) || purchase<0 || quantity<=0 || transport<0 || other<0 || margin<0 || margin>=100){
+alert('Please enter valid values. Profit margin must be below 100%.');
+return;
+}
+const total=purchase+transport+other;
+const unit=total/quantity;
+const price=unit/(1-margin/100);
+const profit=price-unit;
+const totalProfit=profit*quantity;
+const money=n=>currency+' '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+document.getElementById('total').textContent=money(total);
+document.getElementById('unit').textContent=money(unit);
+document.getElementById('price').textContent=money(price);
+document.getElementById('profit').textContent=money(profit);
+document.getElementById('totalProfit').textContent=money(totalProfit);
+document.getElementById('actualMargin').textContent=margin.toFixed(2)+'%';
+const selling=Number(sellingInput);
+document.getElementById('comparison').textContent=sellingInput!=='' && Number.isFinite(selling) && selling>=0
+? (product||'Product')+': At '+money(selling)+' per unit, your profit is '+money(selling-unit)+' per unit and your margin is '+((selling-unit)/selling*100).toFixed(2)+'%.'
+: 'Enter an actual selling price to compare your expected profitability.';
+}
+function resetForm(){
+document.querySelectorAll('input').forEach(i=>i.value=i.id==='purchase'?1000:i.id==='quantity'?100:i.id==='transport'?150:i.id==='other'?50:i.id==='margin'?30:'');
+document.getElementById('currency').value='Bs';
+calculate();
+}
+calculate();
+</script>
+</body>
+</html>
